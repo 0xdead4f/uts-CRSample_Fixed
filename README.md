@@ -2,3 +2,5 @@
 
 user : admin\
 pass : admin
+
+# Manual Static Analysis [FIXED]

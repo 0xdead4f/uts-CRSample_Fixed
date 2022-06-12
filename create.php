@@ -1,17 +1,33 @@
 <?php
 include 'functions.php';
-$pdo = pdo_connect();
 
-if (!empty($_POST)) {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $phone = $_POST['phone'];
-    $title = $_POST['title'];
-    $created = date('Y-m-d H:i:s');
-    // Insert new record into the contacts table
-    $stmt = $pdo->prepare('INSERT INTO contacts VALUES (?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$id, $name, $email, $phone, $title, $created]);
-    header("location:index.php");
+$notif = null;
+if (!isset($_SESSION['user'])) {
+    header("location: login.php");
+}else{
+    $pdo = pdo_connect();
+    if (!empty($_POST)) {
+        $name = $_POST['name'];
+        $name = filter_var($name, FILTER_SANITIZE_STRING);
+        $email = $_POST['email'];
+        $email = filter_var($email, FILTER_SANITIZE_STRING);
+        $phone = $_POST['phone'];
+        $phone = filter_var($phone, FILTER_SANITIZE_STRING);
+        $title = $_POST['title'];
+        $title = filter_var($title, FILTER_SANITIZE_STRING);
+        //validate input
+        if(($name || $title) || !filter_var($email, FILTER_VALIDATE_EMAIL) || is_numeric($phone)){
+                 $created = date('Y-m-d H:i:s');
+                // Insert new record into the contacts table
+                $stmt = $pdo->prepare('INSERT INTO contacts VALUES (?, ?, ?, ?, ?, ?)');
+                $stmt->execute([$id, $name, $email, $phone, $title, $created]);
+                header("location:index.php");
+            }else{
+                $notif = "Form tidak boleh ada yang kosong!";
+            }
+
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -37,6 +53,11 @@ if (!empty($_POST)) {
                             <input class="form-control form-control-sm" placeholder="Email" type="text" name="email" id="email" required><br>
                             <input class="form-control form-control-sm" placeholder="Phone number" type="text" name="phone" id="phone" required><br>
                             <input class="form-control form-control-sm" placeholder="Title" type="text" name="title" id="title" required><br>
+                            <div class="checkbox mb-3">
+                                    <label>
+                                        <?= $notif ?>
+                                    </label>
+                                </div>
                             <input class="btn btn-primary btn-sm" type="submit" value="Save">
                             <a href="index.php" type="button" class="btn btn-warning btn-sm">Cancel</a>
                         </form>
